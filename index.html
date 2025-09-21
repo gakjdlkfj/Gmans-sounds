@@ -20,6 +20,9 @@
     <div class="top-actions">
       <button id="btnArmAudio" class="primary" title="Enable ultra-low latency playback">Arm Audio</button>
       <button id="btnAdd" class="accent" title="Add audio files (drag & drop works too)">Add Sounds</button>
+      <button id="btnAddSpotify" title="Search and add from Spotify">Add from Spotify</button>
+      <button id="btnSpotify" class="secondary" title="Connect to Spotify">Connect Spotify</button>
+      <button id="btnSpotifyAdd" class="accent" title="Search and add tracks from Spotify" disabled>Add from Spotify</button>
       <button id="btnStopAll" title="Stop all playing audio">Stop All</button>
       <button id="btnExport" title="Export your board (with or without audio)">Export</button>
       <button id="btnImport" title="Import a previously exported board">Import</button>
@@ -210,9 +213,39 @@
       <label class="checkbox"><input type="checkbox" id="settingWaveformHQ" /> High-quality waveform (slower)</label>
       <label class="checkbox"><input type="checkbox" id="settingKeyPreview" checked /> Key press previews selection</label>
       <label class="checkbox"><input type="checkbox" id="settingMidi" /> Enable WebMIDI (if supported)</label>
+      <hr style="border:none;border-top:1px solid var(--border);margin:.5rem 0" />
+      <h4 style="margin:0 1rem .25rem">Spotify</h4>
+      <div class="row" style="padding:0 1rem 0">
+        <label>Spotify Client ID</label>
+        <input id="spotifyClientId" type="text" placeholder="Paste your Spotify Client ID" />
+        <small class="muted">Create one in the <a href=\"https://developer.spotify.com/dashboard\" target=\"_blank\">Spotify Developer Dashboard</a>. Set the redirect URI to your site URL.</small>
+      </div>
+      <div class="row" style="padding:0 1rem 0">
+        <button id="btnSpotifyConnect" type="button" class="accent">Connect to Spotify</button>
+        <small id="spotifyStatus" class="muted">Not connected</small>
+      </div>
       <menu>
         <button value="cancel">Close</button>
         <button value="ok" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="spotifyDialog">
+    <form method="dialog" class="dialog">
+      <h3>Spotify: Add Tracks</h3>
+      <div style="padding:0 1rem 1rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center">
+        <input id="spSearch" type="search" placeholder="Search tracks or artists…" style="flex:2; min-width:260px">
+        <button id="spDoSearch" type="button">Search</button>
+        <button id="spFetchPlaylists" type="button">My Playlists</button>
+        <span id="spWho" class="muted"></span>
+        <span class="spacer"></span>
+        <button id="spLogout" type="button">Disconnect</button>
+      </div>
+      <div id="spResults" class="sp-results"></div>
+      <div id="spPlaylists" class="sp-playlists" hidden></div>
+      <menu>
+        <button value="cancel">Close</button>
       </menu>
     </form>
   </dialog>
