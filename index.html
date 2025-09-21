@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Open Sports Soundboard Pro</title>
+  <meta name="description" content="A fast, offline-capable, 8,640-pad soundboard for sports and live events with instant play, custom cue control, and color-coded pads." />
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#111827">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🟢</span>
+      <strong>Open Sports Soundboard Pro</strong>
+      <span class="version" id="version"></span>
+    </div>
+    <div class="spacer"></div>
+    <div class="top-actions">
+      <button id="btnArmAudio" class="primary" title="Enable ultra-low latency playback">Arm Audio</button>
+      <button id="btnAdd" class="accent" title="Add audio files (drag & drop works too)">Add Sounds</button>
+      <button id="btnStopAll" title="Stop all playing audio">Stop All</button>
+      <button id="btnExport" title="Export your board (with or without audio)">Export</button>
+      <button id="btnImport" title="Import a previously exported board">Import</button>
+      <button id="btnSettings" title="Open settings">Settings</button>
+      <button id="btnInstall" class="secondary" hidden>Install App</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="toolbar">
+      <div class="search">
+        <input id="searchBox" type="search" placeholder="Search pads by name, tag, or color…" aria-label="Search pads" />
+      </div>
+      <div class="bank">
+        <button id="prevPage" title="Previous bank (PgUp)">◀</button>
+        <label for="pageSelect">Bank</label>
+        <select id="pageSelect" aria-label="Bank select"></select>
+        <span id="pageInfo" class="muted"></span>
+        <button id="nextPage" title="Next bank (PgDn)">▶</button>
+      </div>
+      <div class="quick">
+        <label>Master</label>
+        <input id="masterVol" type="range" min="0" max="1" step="0.01" value="0.9" title="Master Volume" />
+        <span id="latency" class="muted" title="Estimated output latency">—</span>
+      </div>
+    </section>
+
+    <section id="grid" class="grid" aria-label="Pad grid" tabindex="0"></section>
+
+    <aside id="editor" class="drawer" aria-label="Pad editor" hidden>
+      <header class="drawer-head">
+        <strong>Edit Pad</strong>
+        <button id="closeEditor" class="icon-btn" title="Close">✕</button>
+      </header>
+      <div class="drawer-body">
+        <form id="padForm">
+          <div class="row">
+            <label>Name</label>
+            <input id="padName" type="text" maxlength="60" />
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>Color</label>
+              <input id="padColor" type="color" value="#1f2937" />
+            </div>
+            <div>
+              <label>Tags (comma-separated)</label>
+              <input id="padTags" type="text" placeholder="goal, buzzer, stinger" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>Playback Mode</label>
+              <select id="padMode">
+                <option value="oneshot">One‑Shot</option>
+                <option value="gate">Gate (hold to play)</option>
+                <option value="toggleLoop">Toggle Loop</option>
+              </select>
+            </div>
+            <div>
+              <label>Exclusive Group</label>
+              <input id="padGroup" type="text" placeholder="e.g., music, sfx, voice" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>Volume</label>
+              <input id="padVol" type="range" min="0" max="2" step="0.01" value="1" />
+            </div>
+            <div>
+              <label>Detune (cents)</label>
+              <input id="padDetune" type="number" step="1" min="-2400" max="2400" value="0" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>Rate (1.0 = normal)</label>
+              <input id="padRate" type="number" step="0.01" min="0.25" max="4" value="1.0" />
+            </div>
+            <div>
+              <label>Fade In / Out (sec)</label>
+              <div class="split">
+                <input id="padFadeIn" type="number" step="0.01" min="0" value="0.03" />
+                <input id="padFadeOut" type="number" step="0.01" min="0" value="0.03" />
+              </div>
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>Start / End (sec)</label>
+              <div class="split">
+                <input id="padStart" type="number" step="0.01" min="0" value="0" />
+                <input id="padEnd" type="number" step="0.01" min="0" value="0" />
+              </div>
+            </div>
+            <div>
+              <label>Key Binding</label>
+              <div class="split">
+                <input id="padKey" type="text" placeholder="Press a key…" readonly />
+                <button id="btnLearnKey" type="button">Learn</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>MIDI Note</label>
+              <div class="split">
+                <input id="padMidi" type="text" placeholder="e.g., 60 (C4)" readonly />
+                <button id="btnLearnMidi" type="button">Learn MIDI</button>
+              </div>
+            </div>
+            <div></div>
+          </div>
+
+          <div class="row">
+            <label>Assigned Audio</label>
+            <div class="audio-assign">
+              <button id="btnAssignAudio" type="button">Choose File</button>
+              <span id="audioName" class="muted">None</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <label>Cues</label>
+            <p class="muted" style="margin:.25rem 0 0">Click waveform to set playhead. <strong>Ctrl-click</strong> = set Start, <strong>Alt-click</strong> = set End.</p>
+            <div class="cue-toolbar" style="margin-top:.25rem">
+              <button id="btnAddCue" type="button">Add Cue @ Playhead</button>
+              <button id="btnClearCues" type="button">Clear Cues</button>
+            </div>
+            <canvas id="wave" height="96" class="wave"></canvas>
+            <ul id="cueList" class="cue-list"></ul>
+          </div>
+
+          <div class="row right">
+            <button id="btnDeletePadAudio" type="button">Remove Audio</button>
+            <div class="spacer"></div>
+            <button id="btnDuplicatePad" type="button">Duplicate Pad</button>
+            <button id="btnSavePad" class="primary" type="submit">Save</button>
+          </div>
+        </form>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="bottombar">
+    <div class="left">
+      <span class="muted">Pads per bank: <strong>120</strong> • Banks: <strong>72</strong> • Total pads: <strong>8,640</strong></span>
+    </div>
+    <div class="right muted" id="status">Ready</div>
+  </footer>
+
+  <input id="fileInput" type="file" accept="audio/*" multiple hidden />
+  <input id="assignInput" type="file" accept="audio/*" hidden />
+
+  <dialog id="importDialog">
+    <form method="dialog" class="dialog">
+      <h3>Import Board</h3>
+      <p>Choose a .json file exported from this app.</p>
+      <input id="importFile" type="file" accept="application/json" />
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button id="confirmImport" value="ok" class="primary">Import</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="exportDialog">
+    <form method="dialog" class="dialog">
+      <h3>Export Board</h3>
+      <p>Choose whether to include audio files in the export.</p>
+      <label class="checkbox"><input type="checkbox" id="exportWithAudio" /> Include audio (bigger file)</label>
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button id="confirmExport" value="ok" class="primary">Export</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" class="dialog">
+      <h3>Settings</h3>
+      <label class="checkbox"><input type="checkbox" id="settingWaveformHQ" /> High-quality waveform (slower)</label>
+      <label class="checkbox"><input type="checkbox" id="settingKeyPreview" checked /> Key press previews selection</label>
+      <label class="checkbox"><input type="checkbox" id="settingMidi" /> Enable WebMIDI (if supported)</label>
+      <menu>
+        <button value="cancel">Close</button>
+        <button value="ok" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

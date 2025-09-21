@@ -1,0 +1,10 @@
+{
+  "name": "Open Sports Soundboard Pro",
+  "short_name": "Soundboard Pro",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#111827",
+  "description": "A fast, offline-capable, 8,640-pad soundboard for sports and live events with instant play, custom cue control, and color-coded pads.",
+  "icons": []
+}
